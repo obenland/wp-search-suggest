@@ -1,0 +1,1 @@
+jQuery(function($){$('#s').suggest(wpss_options.ajaxurl,{onSelect:function(){$('#searchform').submit();}});});
