@@ -4,7 +4,7 @@
  * Plugin Name:	WP Search Suggest
  * Plugin URI:	http://www.obenlands.de/en/portfolio/wp-search-suggest/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Description:	Provides title suggestions while typing a search query, using the built in jQuery suggest script.
- * Version:		1.0
+ * Version:		1.1
  * Author:		Konstantin Obenland
  * Author URI:	http://www.obenlands.de/en/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Text Domain: wp-search-suggest
@@ -159,15 +159,30 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 		check_ajax_referer( $this->textdomain, 'amp;_wpnonce' );
 	
 		$s = trim(stripslashes( $_GET['q'] ));
-	
-		$query = new WP_Query(array(
-			's'	=>	$s
-		));
+		
+		$query_args = apply_filters(
+			'wpss_search_query_args',
+			array(
+				's'				=>	$s,
+				'post_status'	=>	'publish'
+			),
+			$s
+		);
+		
+		$query = new WP_Query( $query_args );
 		
 		if ( ! empty($query->posts) ) {
+			
 			foreach ( $query->posts as $post ) {
 				$results[] = $post->post_title;
 			}
+			
+			$results = apply_filters(
+				'wpss_search_results',
+				$results,
+				$query
+			);
+			
 			echo join( $results, "\n" );
 		}
 		
