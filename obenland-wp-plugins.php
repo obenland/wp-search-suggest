@@ -2,8 +2,7 @@
 /** obenland-wp-plugins.php
  * 
  * @author		Konstantin Obenland
- * @version		1.2
- * @since		1.1
+ * @version		1.3
  */
 
 
@@ -68,24 +67,6 @@ class Obenland_Wp_Plugins {
 	protected $plugin_path;
 	
 	
-	/**
-	 * Holds all admin notices produced by plugins
-	 *
-	 * Expected values: array(
-	 * 	'class'	=>	'error' OR 'updated',
-	 * 	'text'	=>	__('The message')
-	 * )
-	 *
-	 * @author	Konstantin Obenland
-	 * @since	1.2 - 21.04.2011
-	 * @access	protected
-	 * @static
-	 *
-	 * @var		array
-	 */
-	protected $admin_notices	=	array();
-	
-	
 	///////////////////////////////////////////////////////////////////////////
 	// METHODS, PUBLIC
 	///////////////////////////////////////////////////////////////////////////
@@ -101,16 +82,22 @@ class Obenland_Wp_Plugins {
 	 * @param	string	$donate_link_id
 	 */
 	public function __construct( $args = array() ) {
+		
+		// Set class properties
 		$this->textdomain	=	$args['textdomain'];
 		$this->plugin_name	=	$args['plugin_name'];
+		
 		$this->set_donate_link( $args['donate_link_id'] );
-		$this->plugin_path	=	trailingslashit( WP_PLUGIN_DIR )
-							.	str_replace(
-									basename($this->plugin_name),
-									"",
-									$this->plugin_name
-								);
-
+		
+		$plugin_folder		=	str_replace(
+			basename($this->plugin_name),
+			"",
+			$this->plugin_name
+		);
+		$this->plugin_path	=	trailingslashit( WP_PLUGIN_DIR ) . $plugin_folder;
+		
+		
+		// Add actions and filters
 		add_action( 'plugin_row_meta', array(
 			&$this,
 			'plugin_meta_donate'
@@ -139,21 +126,6 @@ class Obenland_Wp_Plugins {
 		return $plugin_meta;
 	}
 	
-	/**
-	 * Displays all error and update messages
-	 * 
-	 * Helper function for displaying errors and notices on the admin screen.
-	 *
-	 * @author	Konstantin Obenland
-	 * @since	1.2 - 21.04.2011
-	 * @access	public
-	 *
-	 * @return	void
-	 */
-	public function show_admin_notices() {
-		 echo $this->admin_notices();
-	}
-	
 	
 	///////////////////////////////////////////////////////////////////////////
 	// METHODS, PROTECTED
@@ -175,52 +147,6 @@ class Obenland_Wp_Plugins {
 		), 'https://www.paypal.com/cgi-bin/webscr' );
 	}
 	
-	
-	/**
-	 * Returns a string with all messages
-	 * 
-	 * Helper function for displaying errors and notices on the admin screen.
-	 *
-	 * @author	Konstantin Obenland
-	 * @since	1.2 - 21.04.2011
-	 * @access	protected
-	 *
-	 * @return	string
-	 */
-	protected function get_admin_notices() {
-		 
-		$message = '';
-		
-		if( ! empty($this->admin_notices) ) {
-			foreach( $this->admin_notices as $notice ) {
-				$message	.=	'<div class="' . $notice['class'] . ' fade">'	. "\n"
-							.	'	<p>' . $notice['text'] . '</p>'				. "\n"
-							.	'</div>'										. "\n";
-			}
-		}
-		
-		return $message;
-	}
-	
-	
-	/**
-	 * Sets an admin notice
-	 * 
-	 * @author	Konstantin Obenland
-	 * @since	1.2 - 21.04.2011
-	 * @access	protected
-	 * 
-	 * @param	string	$class
-	 * @param	string	$notice
-	 * 
-	 * @return	void
-	 */
-	protected function set_admin_notice( string $class, string $notice ) {
-		$this->admin_notices[] = array(
-			'class'	=>	$class,
-			'text'	=>	$notice
-		);
-	}
 } // End of class Obenland_Wp_Plugins
 
 
