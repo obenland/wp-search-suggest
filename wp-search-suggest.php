@@ -1,10 +1,10 @@
 <?php
 /** wp-search-suggest.php
- * 
+ *
  * Plugin Name:	WP Search Suggest
  * Plugin URI:	http://www.obenlands.de/en/portfolio/wp-search-suggest/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Description:	Provides title suggestions while typing a search query, using the built in jQuery suggest script.
- * Version:		1.1
+ * Version:		1.2
  * Author:		Konstantin Obenland
  * Author URI:	http://www.obenlands.de/en/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Text Domain: wp-search-suggest
@@ -27,11 +27,11 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @author	Konstantin Obenland
 	 * @since	1.0 - 16.04.2011
 	 * @access	public
-	 * 
+	 *
 	 * @return	Obenland_Wp_Search_Suggest
 	 */
 	public function __construct() {
@@ -64,22 +64,22 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 				&$this,
 				'print_styles'
 			));
-		}		
+		}
 	}
 	
 	
 	/**
 	 * Registers the script and stylesheet
-	 * 
+	 *
 	 * The scripts and stylesheets can easilz be deregeistered be calling
 	 * <code>wp_deregister_script( 'wp-search-suggest' );</code> or
 	 * <code>wp_deregister_style( 'wp-search-suggest' );</code> on the init
 	 * hook
-	 * 
+	 *
 	 * @author	Konstantin Obenland
 	 * @since	1.0 - 16.04.2011
 	 * @access	public
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function register_scripts_styles() {
@@ -118,11 +118,11 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	
 	/**
 	 * Enqueues the script
-	 * 
+	 *
 	 * @author	Konstantin Obenland
 	 * @since	1.0 - 16.04.2011
 	 * @access	public
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function print_scripts() {
@@ -132,11 +132,11 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	
 	/**
 	 * Enqueues the stylesheet
-	 * 
+	 *
 	 * @author	Konstantin Obenland
 	 * @since	1.0 - 16.04.2011
 	 * @access	public
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function print_styles() {
@@ -146,17 +146,18 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	
 	/**
 	 * Handles the AJAX request
-	 * 
+	 *
 	 * @author	Konstantin Obenland
 	 * @since	1.0 - 16.04.2011
 	 * @access	public
-	 * 
+	 *
 	 * @return	void
 	 */
 	public function ajax_response() {
 		
-		// jQuery can't handle escaped URLs??
-		check_ajax_referer( $this->textdomain, 'amp;_wpnonce' );
+		// jQuery can't handle escaped URLs until v1.7
+		$amp	=	version_compare(get_bloginfo('version'), '3.2.1', '<=') ? 'amp;' : '';
+		check_ajax_referer( $this->textdomain, "{$amp}_wpnonce" );
 	
 		$s = trim(stripslashes( $_GET['q'] ));
 		

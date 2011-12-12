@@ -3,8 +3,8 @@ Contributors: kobenland
 Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
 Requires at least: 3.0
-Tested up to: 3.1.2
-Stable tag: 1.1
+Tested up to: 3.3
+Stable tag: 1.2
 
 Provides title suggestions while typing a search query, using the built in jQuery suggest script.
 
@@ -32,7 +32,8 @@ Currently available in:
 
 == Frequently Asked Questions ==
 
-None asked yet.
+= The plugin doesn't work with my theme. What's wrong? =
+Make sure your theme's search input field has an `id="s"` and your form tag an `id="searchform"`, as in TwentyTen and TwentyEleven. It'll work fine then.
 
 
 == Screenshots ==
@@ -51,6 +52,10 @@ None asked yet.
 
 
 == Changelog ==
+
+= 1.2 =
+* Added compatibilty for WordPress 3.3
+* Updated FAQ section
 
 = 1.1 =
 * Added filters so users can adjust the search query and displayed results to their needs (see Filter Reference)
