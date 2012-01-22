@@ -3,8 +3,8 @@ Contributors: kobenland
 Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
 Requires at least: 3.0
-Tested up to: 3.3
-Stable tag: 1.2
+Tested up to: 3.3.1
+Stable tag: 1.3
 
 Provides title suggestions while typing a search query, using the built in jQuery suggest script.
 
@@ -53,6 +53,11 @@ Make sure your theme's search input field has an `id="s"` and your form tag an `
 
 == Changelog ==
 
+= 1.3 =
+* Cut down on filter calls
+* Optimized AJAX handling with jQuery 1.7.1
+* Tested for WordPress 3.3.1
+
 = 1.2 =
 * Added compatibilty for WordPress 3.3
 * Updated FAQ section
@@ -63,3 +68,7 @@ Make sure your theme's search input field has an `id="s"` and your form tag an `
 
 = 1.0 =
 * Initial Release
+
+
+== Release Notes ==
+Maintenance update for jQuery 1.7.1

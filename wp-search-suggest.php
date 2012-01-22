@@ -4,7 +4,7 @@
  * Plugin Name:	WP Search Suggest
  * Plugin URI:	http://www.obenlands.de/en/portfolio/wp-search-suggest/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Description:	Provides title suggestions while typing a search query, using the built in jQuery suggest script.
- * Version:		1.2
+ * Version:		1.3
  * Author:		Konstantin Obenland
  * Author URI:	http://www.obenlands.de/en/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Text Domain: wp-search-suggest
@@ -48,23 +48,16 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 				'ajax_response'
 			));
 		}
-		
-		if ( ! is_admin() ) {
-			add_filter( 'init', array(
-				&$this,
-				'register_scripts_styles'
-			), 9); // Set to 9, so they can easily be deregistered
-				
-			add_filter( 'wp_print_scripts', array(
-				&$this,
-				'print_scripts'
-			));
+
+		add_filter( 'init', array(
+			&$this,
+			'register_scripts_styles'
+		), 9); // Set to 9, so they can easily be deregistered
 			
-			add_filter( 'wp_print_styles', array(
-				&$this,
-				'print_styles'
-			));
-		}
+		add_filter( 'wp_enqueue_scripts', array(
+			&$this,
+			'print_scripts_styles'
+		));
 	}
 	
 	
@@ -125,21 +118,8 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	 *
 	 * @return	void
 	 */
-	public function print_scripts() {
+	public function print_scripts_styles() {
 		wp_enqueue_script( $this->textdomain );
-	}
-	
-	
-	/**
-	 * Enqueues the stylesheet
-	 *
-	 * @author	Konstantin Obenland
-	 * @since	1.0 - 16.04.2011
-	 * @access	public
-	 *
-	 * @return	void
-	 */
-	public function print_styles() {
 		wp_enqueue_style( $this->textdomain );
 	}
 	
