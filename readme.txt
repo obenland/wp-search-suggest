@@ -70,5 +70,5 @@ Make sure your theme's search input field has an `id="s"` and your form tag an `
 * Initial Release
 
 
-== Release Notes ==
+== Upgrade Notice == 
 Maintenance update for jQuery 1.7.1
