@@ -64,7 +64,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 	 * @return	void
 	 */
 	public function init() {
-		$plugin_data = get_plugin_data( __FILE__, false, false );
+		$plugin_data = get_file_data( __FILE__, array('Version' => 'Version'), 'plugin' );
 		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '.dev' : '';
 
 		wp_register_script(
