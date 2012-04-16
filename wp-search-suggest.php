@@ -2,23 +2,23 @@
 /** wp-search-suggest.php
  *
  * Plugin Name:	WP Search Suggest
- * Plugin URI:	http://www.obenlands.de/en/portfolio/wp-search-suggest/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
+ * Plugin URI:	http://en.obenland.it/wp-search-suggest/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Description:	Provides title suggestions while typing a search query, using the built in jQuery suggest script.
- * Version:		1.3
+ * Version:		1.3.1
  * Author:		Konstantin Obenland
- * Author URI:	http://www.obenlands.de/en/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
+ * Author URI:	http://en.obenland.it/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Text Domain: wp-search-suggest
  * Domain Path: /lang
  * License:		GPLv2
  */
 
 
-if( ! class_exists('Obenland_Wp_Plugins') ) {
-	require_once('obenland-wp-plugins.php');
+if ( ! class_exists('Obenland_Wp_Plugins_v200') ) {
+	require_once( 'obenland-wp-plugins.php' );
 }
 
 
-class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
+class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 	
 	
 	///////////////////////////////////////////////////////////////////////////
@@ -38,26 +38,14 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 		
 		parent::__construct( array(
 			'textdomain'		=>	'wp-search-suggest',
-			'plugin_name'		=>	plugin_basename(__FILE__),
+			'plugin_path'		=>	__FILE__,
 			'donate_link_id'	=>	'TLX9TH5XRURBA'
 		));
-		
-		foreach( array('wp_ajax_', 'wp_ajax_nopriv_') as $hook ) {
-			add_action( $hook . $this->textdomain, array(
-				&$this,
-				'ajax_response'
-			));
-		}
 
-		add_filter( 'init', array(
-			&$this,
-			'register_scripts_styles'
-		), 9); // Set to 9, so they can easily be deregistered
-			
-		add_filter( 'wp_enqueue_scripts', array(
-			&$this,
-			'print_scripts_styles'
-		));
+		$this->hook( 'wp_ajax_wp-search-suggest',			'ajax_response' );
+		$this->hook( 'wp_ajax_nopriv_wp-search-suggest',	'ajax_response' );
+		$this->hook( 'init', 9 ); // Set to 9, so they can easily be deregistered
+		$this->hook( 'wp_enqueue_scripts' );
 	}
 	
 	
@@ -75,36 +63,32 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	 *
 	 * @return	void
 	 */
-	public function register_scripts_styles() {
+	public function init() {
+		$plugin_data = get_plugin_data( __FILE__, false, false );
 		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '.dev' : '';
 
 		wp_register_script(
 			$this->textdomain,
 			plugins_url("/js/wpss-search-suggest$suffix.js", __FILE__),
 			array('suggest'),
-			filemtime($this->plugin_path . "js/wpss-search-suggest$suffix.js"),
+			$plugin_data['Version'],
 			true
 		);
 		
 		wp_localize_script(
 			$this->textdomain,
 			'wpss_options',
-			array(
-				'ajaxurl'	=>	add_query_arg(
-					array(
-						'action'	=>	$this->textdomain,
-						'_wpnonce'	=>	wp_create_nonce( $this->textdomain )
-					),
-					admin_url('admin-ajax.php')
-				),
-			)
+			array( 'ajaxurl'	=>	add_query_arg( array(
+				'action'	=>	$this->textdomain,
+				'_wpnonce'	=>	wp_create_nonce( $this->textdomain )
+			), admin_url('admin-ajax.php') ), )
 		);
 		
 		wp_register_style(
 			$this->textdomain,
 			plugins_url("/css/wpss-search-suggest$suffix.css", __FILE__),
 			array(),
-			filemtime($this->plugin_path . "css/wpss-search-suggest$suffix.css")
+			$plugin_data['Version']
 		);
 	}
 	
@@ -118,7 +102,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 	 *
 	 * @return	void
 	 */
-	public function print_scripts_styles() {
+	public function wp_enqueue_scripts() {
 		wp_enqueue_script( $this->textdomain );
 		wp_enqueue_style( $this->textdomain );
 	}
@@ -139,7 +123,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 		$amp	=	version_compare(get_bloginfo('version'), '3.2.1', '<=') ? 'amp;' : '';
 		check_ajax_referer( $this->textdomain, "{$amp}_wpnonce" );
 	
-		$s = trim(stripslashes( $_GET['q'] ));
+		$s = trim( stripslashes( $_GET['q'] ) );
 		
 		$query_args = apply_filters(
 			'wpss_search_query_args',
@@ -152,7 +136,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins {
 		
 		$query = new WP_Query( $query_args );
 		
-		if ( ! empty($query->posts) ) {
+		if ( $query->posts ) {
 			
 			foreach ( $query->posts as $post ) {
 				$results[] = $post->post_title;
