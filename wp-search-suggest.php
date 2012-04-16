@@ -2,11 +2,11 @@
 /** wp-search-suggest.php
  *
  * Plugin Name:	WP Search Suggest
- * Plugin URI:	http://en.obenland.it/wp-search-suggest/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
+ * Plugin URI:	http://en.obenland.it/wp-search-suggest/#utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Description:	Provides title suggestions while typing a search query, using the built in jQuery suggest script.
  * Version:		1.3.1
  * Author:		Konstantin Obenland
- * Author URI:	http://en.obenland.it/?utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
+ * Author URI:	http://en.obenland.it/#utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Text Domain: wp-search-suggest
  * Domain Path: /lang
  * License:		GPLv2
@@ -52,7 +52,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 	/**
 	 * Registers the script and stylesheet
 	 *
-	 * The scripts and stylesheets can easilz be deregeistered be calling
+	 * The scripts and stylesheets can easily be deregeistered be calling
 	 * <code>wp_deregister_script( 'wp-search-suggest' );</code> or
 	 * <code>wp_deregister_style( 'wp-search-suggest' );</code> on the init
 	 * hook
@@ -69,7 +69,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 
 		wp_register_script(
 			$this->textdomain,
-			plugins_url("/js/wpss-search-suggest$suffix.js", __FILE__),
+			plugins_url("/js/wpss-search-suggest{$suffix}.js", __FILE__),
 			array('suggest'),
 			$plugin_data['Version'],
 			true
@@ -86,7 +86,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 		
 		wp_register_style(
 			$this->textdomain,
-			plugins_url("/css/wpss-search-suggest$suffix.css", __FILE__),
+			plugins_url("/css/wpss-search-suggest{$suffix}.css", __FILE__),
 			array(),
 			$plugin_data['Version']
 		);
@@ -94,7 +94,7 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 	
 	
 	/**
-	 * Enqueues the script
+	 * Enqueues the script and style
 	 *
 	 * @author	Konstantin Obenland
 	 * @since	1.0 - 16.04.2011
@@ -153,7 +153,6 @@ class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_v200 {
 		
 		die;
 	}
-
 }  // End of class Obenland_Wp_Search_Suggest
 
 
