@@ -2,11 +2,11 @@
 /** wp-search-suggest.php
  *
  * Plugin Name:	WP Search Suggest
- * Plugin URI:	http://en.obenland.it/wp-search-suggest/#utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
+ * Plugin URI:	http://en.wp.obenland.it/wp-search-suggest/#utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Description:	Provides title suggestions while typing a search query, using the built in jQuery suggest script.
  * Version:		1.3.1
  * Author:		Konstantin Obenland
- * Author URI:	http://en.obenland.it/#utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
+ * Author URI:	http://en.wp.obenland.it/#utm_source=wordpress&utm_medium=plugin&utm_campaign=wp-search-suggest
  * Text Domain: wp-search-suggest
  * Domain Path: /lang
  * License:		GPLv2
