@@ -1,10 +1,10 @@
 === WP Search Suggest ===
-Contributors: kobenland
+Contributors: obenland
 Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
-Requires at least: 3.0
-Tested up to: 3.4-beta2
-Stable tag: 1.3.1
+Requires at least: 3.3
+Tested up to: 3.8
+Stable tag: 2.0.1
 
 Provides title suggestions while typing a search query, using the built in jQuery suggest script.
 
@@ -21,6 +21,7 @@ Currently available in:
 
 * English
 * Deutsch
+* Czech
 
 
 == Installation ==
@@ -52,6 +53,16 @@ Make sure your theme's search input field has an `id="s"` and your form tag an `
 
 
 == Changelog ==
+
+= 2.0.1 =
+* Fixed a bug with how scripts and styles were enqueued.
+
+= 2.0.0 =
+* Now goes directly to the post selected.
+* Changed license to GPLv2 or later
+* Added Czech translation. Props Roman Opet.
+* Minor formatting updates.
+* Removed compatibility for pre-3.3. installations.
 
 = 1.3.1 =
 * Updated utility class
