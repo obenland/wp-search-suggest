@@ -3,8 +3,8 @@ Contributors: obenland
 Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
 Requires at least: 3.3
-Tested up to: 3.8
-Stable tag: 2.0.1
+Tested up to: 6.1
+Stable tag: 6
 
 Provides title suggestions while typing a search query, using the built in jQuery suggest script.
 
@@ -34,7 +34,7 @@ Currently available in:
 == Frequently Asked Questions ==
 
 = The plugin doesn't work with my theme. What's wrong? =
-Make sure your theme's search input field has an `id="s"` and your form tag an `id="searchform"`, as in TwentyTen and TwentyEleven. It'll work fine then.
+Make sure your theme's search input field has an `id="s"` and/or `name="s"` as in TwentyTen and TwentyEleven. It'll work fine then.
 
 
 == Screenshots ==
@@ -53,6 +53,24 @@ Make sure your theme's search input field has an `id="s"` and your form tag an `
 
 
 == Changelog ==
+
+= 6 =
+* Bumped z-index of search result box to be compatible with Boldwp theme.
+
+= 5 =
+* Fixed a bug where suggested selections could end up redirecting to the wrong version of a post.
+
+= 4 =
+* Finally adds support for HTML5 search forms.
+
+= 3 =
+* Maintenance release.
+* Updated code to adhere to WordPress Coding Standards.
+* Tested for WordPress 5.0
+
+= 2.1.0 =
+* Maintenance release.
+* Tested for WordPress 4.0
 
 = 2.0.1 =
 * Fixed a bug with how scripts and styles were enqueued.
@@ -85,5 +103,5 @@ Make sure your theme's search input field has an `id="s"` and your form tag an `
 * Initial Release
 
 
-== Upgrade Notice == 
+== Upgrade Notice ==
 Maintenance update for jQuery 1.7.1
