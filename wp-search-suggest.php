@@ -11,168 +11,119 @@
  * License:     GNU General Public License v2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
- * @package WP Search Suggest
+ * @package wp-search-suggest
  */
-
-if ( ! class_exists( 'Obenland_Wp_Plugins_V4' ) ) {
-	require_once 'obenland-wp-plugins.php';
-}
 
 /**
- * Class Obenland_Wp_Search_Suggest
+ * Registers the script and stylesheet.
+ *
+ * The scripts and stylesheets can easily be deregistered by calling
+ * <code>wp_deregister_script( 'wp-search-suggest' );</code> or
+ * <code>wp_deregister_style( 'wp-search-suggest' );</code> on the init hook.
  */
-class Obenland_Wp_Search_Suggest extends Obenland_Wp_Plugins_V4 {
+function wpss_init() {
+	$plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ), 'plugin' );
+	$suffix      = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.dev' : '';
 
-	/**
-	 * Constructor.
-	 *
-	 * @author Konstantin Obenland
-	 * @since  1.0 - 16.04.2011
-	 * @access public
-	 */
-	public function __construct() {
-		parent::__construct( array(
-			'textdomain'     => 'wp-search-suggest',
-			'plugin_path'    => __FILE__,
-			'donate_link_id' => 'TLX9TH5XRURBA',
-		) );
-
-		$this->hook( 'wp_ajax_wp-search-suggest', 'ajax_response' );
-		$this->hook( 'wp_ajax_nopriv_wp-search-suggest', 'ajax_response' );
-		$this->hook( 'wp_ajax_wpss-post-url', 'post_url' );
-		$this->hook( 'wp_ajax_nopriv_wpss-post-url', 'post_url' );
-		$this->hook( 'init', 9 ); // Set to 9, so they can easily be deregistered.
-		$this->hook( 'wp_enqueue_scripts' );
-	}
-
-
-	/**
-	 * Registers the script and stylesheet.
-	 *
-	 * The scripts and stylesheets can easily be deregeistered be calling
-	 * <code>wp_deregister_script( 'wp-search-suggest' );</code> or
-	 * <code>wp_deregister_style( 'wp-search-suggest' );</code> on the init
-	 * hook.
-	 *
-	 * @author Konstantin Obenland
-	 * @since  1.0 - 16.04.2011
-	 * @access public
-	 *
-	 * @return void
-	 */
-	public function init() {
-		$plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ), 'plugin' );
-		$suffix      = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '.dev' : '';
-
-		wp_register_script( $this->textdomain, plugins_url( "js/wpss-search-suggest$suffix.js", __FILE__ ), array( 'suggest' ), $plugin_data['Version'], true );
-		wp_localize_script( $this->textdomain, 'wpss_options', array(
+	wp_register_script( 'wp-search-suggest', plugins_url( "js/wpss-search-suggest$suffix.js", __FILE__ ), array( 'suggest' ), $plugin_data['Version'], true );
+	wp_localize_script(
+		'wp-search-suggest',
+		'wpss_options',
+		array(
 			'url'     => admin_url( 'admin-ajax.php' ),
 			'nonce'   => wp_create_nonce( 'wpss-post-url' ),
-			'ajaxurl' => add_query_arg( array(
-				'action'   => $this->textdomain,
-				'_wpnonce' => wp_create_nonce( $this->textdomain ),
-			), admin_url( 'admin-ajax.php' ) ),
-		) );
+			'ajaxurl' => add_query_arg(
+				array(
+					'action'   => 'wp-search-suggest',
+					'_wpnonce' => wp_create_nonce( 'wp-search-suggest' ),
+				),
+				admin_url( 'admin-ajax.php' )
+			),
+		)
+	);
 
-		wp_register_style( $this->textdomain, plugins_url( "css/wpss-search-suggest$suffix.css", __FILE__ ), array(), $plugin_data['Version'] );
-	}
+	wp_register_style( 'wp-search-suggest', plugins_url( "css/wpss-search-suggest$suffix.css", __FILE__ ), array(), $plugin_data['Version'] );
+}
+add_action( 'init', 'wpss_init', 9 );
 
+/**
+ * Enqueues the script and style.
+ */
+function wpss_enqueue_scripts() {
+	wp_enqueue_script( 'wp-search-suggest' );
+	wp_enqueue_style( 'wp-search-suggest' );
+}
+add_action( 'wp_enqueue_scripts', 'wpss_enqueue_scripts' );
 
-	/**
-	 * Enqueues the script and style.
-	 *
-	 * @author Konstantin Obenland
-	 * @since  1.0 - 16.04.2011
-	 * @access public
-	 *
-	 * @return void
-	 */
-	public function wp_enqueue_scripts() {
-		wp_enqueue_script( $this->textdomain );
-		wp_enqueue_style(  $this->textdomain );
-	}
+/**
+ * Handles the AJAX request for the search term.
+ */
+function wpss_ajax_response() {
+	check_ajax_referer( 'wp-search-suggest' );
 
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+	$s = trim( stripslashes( $_GET['q'] ) );
 
-	/**
-	 * Handles the AJAX request for the search term.
-	 *
-	 * @author Konstantin Obenland
-	 * @since  1.0 - 16.04.2011
-	 * @access public
-	 *
-	 * @return void
-	 */
-	public function ajax_response() {
-		check_ajax_referer( $this->textdomain );
-
-		// phpcs:ignore WordPress.VIP.ValidatedSanitizedInput.InputNotValidated
-		$s = trim( stripslashes( $_GET['q'] ) );
-
-		$query_args = apply_filters( 'wpss_search_query_args', array(
+	$query_args = apply_filters(
+		'wpss_search_query_args',
+		array(
 			's'           => $s,
 			'post_status' => 'publish',
-		), $s );
+		),
+		$s
+	);
 
-		$query = new WP_Query( $query_args );
+	$query = new WP_Query( $query_args );
 
-		if ( $query->posts ) {
-			$results = apply_filters( 'wpss_search_results', wp_list_pluck( $query->posts, 'post_title' ), $query );
-			echo wp_kses_post( join( "\n", $results ) );
-		}
-
-		wp_die();
+	if ( $query->posts ) {
+		$results = apply_filters( 'wpss_search_results', wp_list_pluck( $query->posts, 'post_title' ), $query );
+		echo wp_kses_post( join( "\n", $results ) );
 	}
 
-	/**
-	 * Handles the AJAX request for a specific title.
-	 *
-	 * @author Konstantin Obenland
-	 * @since  2.0.0 - 29.12.2013
-	 * @access public
-	 *
-	 * @return void
-	 */
-	public function post_url() {
-		check_ajax_referer( 'wpss-post-url' );
+	wp_die();
+}
+add_action( 'wp_ajax_wp-search-suggest', 'wpss_ajax_response' );
+add_action( 'wp_ajax_nopriv_wp-search-suggest', 'ajax_response' );
 
-		// phpcs:ignore WordPress.VIP.ValidatedSanitizedInput.InputNotValidated
-		$post = $this->get_post_id_from_title( trim( stripslashes( $_REQUEST['title'] ) ) );
+/**
+ * Handles the AJAX request for a specific title.
+ */
+function wpss_post_url() {
+	check_ajax_referer( 'wpss-post-url' );
 
-		if ( $post ) {
-			echo esc_url( get_permalink( $post ) );
-		}
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+	$post = wpss_get_post_id_from_title( trim( stripslashes( $_REQUEST['title'] ) ) );
 
-		wp_die();
+	if ( $post ) {
+		echo esc_url( get_permalink( $post ) );
 	}
 
-	/**
-	 * Examines a title and tries to determine the post ID it represents.
-	 *
-	 * @author Konstantin Obenland
-	 * @since  2 - 20.12.2017
-	 * @access protected
-	 *
-	 * @param string $title Post title to check.
-	 *
-	 * @return int Post ID or 0 on failure.
-	 */
-	protected function get_post_id_from_title( $title ) {
-		global $wpdb;
+	wp_die();
+}
+add_action( 'wp_ajax_wpss-post-url', 'wpss_post_url' );
+add_action( 'wp_ajax_nopriv_wpss-post-url', 'wpss_post_url' );
 
-		$post_id = wp_cache_get( 'wpss_post_title' . $title, 'post' );
+/**
+ * Examines a title and tries to determine the post ID it represents.\
+ *
+ * @param string $title Post title to check.
+ * @return int Post ID or 0 on failure.
+ */
+function wpss_get_post_id_from_title( $title ) {
+	global $wpdb;
 
-		if ( false === $post_id ) {
-			$post_id = $wpdb->get_var( $wpdb->prepare(
+	$post_id = wp_cache_get( 'wpss_post_title' . $title, 'post' );
+
+	if ( false === $post_id ) {
+		$post_id = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$wpdb->prepare(
 				"SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_status = 'publish' LIMIT 1",
 				$title
-			) );
+			)
+		);
 
-			wp_cache_set( 'wpss_post_title' . $title, $post_id, 'post' );
-		}
-
-		return absint( $post_id );
+		wp_cache_set( 'wpss_post_title' . $title, $post_id, 'post' );
 	}
-}  // End of class Obenland_Wp_Search_Suggest
 
-
-new Obenland_Wp_Search_Suggest();
+	return absint( $post_id );
+}
