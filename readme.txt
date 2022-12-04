@@ -4,7 +4,7 @@ Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
 Requires at least: 3.3
 Tested up to: 6.1
-Stable tag: 6
+Stable tag: 7
 
 Provides title suggestions while typing a search query, using the built in jQuery suggest script.
 
@@ -53,6 +53,9 @@ Make sure your theme's search input field has an `id="s"` and/or `name="s"` as i
 
 
 == Changelog ==
+
+= 7 =
+* Fixed a bug where the plugin would not work with PHP 8.0 and above. See https://wordpress.org/support/topic/after-php-8-not-working-again/
 
 = 6 =
 * Bumped z-index of search result box to be compatible with Boldwp theme.
