@@ -1,6 +1,8 @@
 jQuery( function( $ ) {
-	$( '#s' ).suggest( wpss_options.ajaxurl, {
+	$( '#s,[name="s"]' ).suggest( wpss_options.ajaxurl, {
 		onSelect: function() {
+			var $form = $( this ).parents( 'form' );
+
 			$.post( wpss_options.url, {
 				action: 'wpss-post-url',
 				_wpnonce: wpss_options.nonce,
@@ -9,10 +11,10 @@ jQuery( function( $ ) {
 				if ( data ) {
 					window.location = data;
 				} else {
-					$( '#searchform' ).submit();
+					$form.submit();
 				}
 			}).fail( function() {
-				$( '#searchform' ).submit();
+				$form.submit();
 			});
 		}
 	});
