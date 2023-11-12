@@ -8,22 +8,13 @@
 /**
  * User meta related tests.
  */
-class Ajax_Requests extends WP_UnitTestCase {
+class Ajax_Requests extends WP_Ajax_UnitTestCase {\
 
-	/**
-	 * Subscriber user object.
-	 *
-	 * @var WP_User
-	 */
-	public static $user;
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
 
-	/**
-	 * Setup before class.
-	 *
-	 * @param WP_UnitTest_Factory $factory Factory.
-	 */
-	public static function wpSetUpBeforeClass( WP_UnitTest_Factory $factory ): void {
-		static::$user = $factory->user->create_and_get( array( 'role' => 'subscriber' ) );
+		add_action( 'wp_ajax_wp-search-suggest', 'wpss_ajax_response' );
+		add_action( 'wp_ajax_nopriv_wp-search-suggest', 'wpss_ajax_response' );
 	}
 
 	/**
@@ -33,23 +24,22 @@ class Ajax_Requests extends WP_UnitTestCase {
 	 */
 	public function test_logged_in_user_can_access() {
 		// Simulate a logged-in user.
-		wp_set_current_user( static::$user );
-
-		// Create a nonce for the logged-in user.
-		$nonce = wp_create_nonce( 'wp-search-suggest' );
+		$this->_setRole( 'subscriber' );
 
 		// Set up the request.
 		$_GET['q']        = 'your_search_query';
-		$_GET['_wpnonce'] = $nonce;
+		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
 
-		// Call the tested function.
-		ob_start();
-		wpss_ajax_response();
-		$output = ob_get_clean();
+		// Make the request.
+		try {
+			$this->_handleAjax( 'wp-search-suggest' );
+		} catch ( WPAjaxDieContinueException $exception ) {
+			unset( $exception );
+		}
 
 		// Assert that the response is not empty or contains an error message.
-		$this->assertNotEmpty( $output );
-		$this->assertNotContains( 'error', $output );
+		$this->assertNotEmpty( $this->_last_response );
+		$this->assertNotContains( 'error', $this->_last_response );
 	}
 
 	/**
@@ -59,23 +49,22 @@ class Ajax_Requests extends WP_UnitTestCase {
 	 */
 	public function test_logged_out_user_can_access() {
 		// Simulate a logged-out user.
-		wp_set_current_user( 0 );
-
-		// Create a nonce for the logged-out user.
-		$nonce = wp_create_nonce( 'wp-search-suggest' );
+		$this->logout();
 
 		// Set up the request.
 		$_GET['q']        = 'your_search_query';
-		$_GET['_wpnonce'] = $nonce;
+		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
 
-		// Call the tested function.
-		ob_start();
-		wpss_ajax_response();
-		$output = ob_get_clean();
+		// Make the request.
+		try {
+			$this->_handleAjax( 'wp-search-suggest' );
+		} catch ( WPAjaxDieContinueException $exception ) {
+			unset( $exception );
+		}
 
 		// Assert that the response is not empty or contains an error message.
-		$this->assertNotEmpty( $output );
-		$this->assertNotContains( 'error', $output );
+		$this->assertNotEmpty( $this->_last_response );
+		$this->assertNotContains( 'error', $this->_last_response );
 	}
 
 	/**
@@ -85,22 +74,21 @@ class Ajax_Requests extends WP_UnitTestCase {
 	 */
 	public function test_invalid_nonce_for_logged_in_user() {
 		// Simulate a logged-in user.
-		wp_set_current_user( static::$user );
-
-		// Create an invalid nonce.
-		$nonce = 'invalid_nonce';
+		$this->_setRole( 'subscriber' );
 
 		// Set up the request with the invalid nonce.
 		$_GET['q']        = 'your_search_query';
-		$_GET['_wpnonce'] = $nonce;
+		$_GET['_wpnonce'] = 'invalid_nonce';
 
-		// Call the tested function.
-		ob_start();
-		wpss_ajax_response();
-		$output = ob_get_clean();
+		// Make the request.
+		try {
+			$this->_handleAjax( 'wp-search-suggest' );
+		} catch ( WPAjaxDieContinueException $exception ) {
+			unset( $exception );
+		}
 
 		// Assert that the response contains an error message.
-		$this->assertContains( 'error', $output );
+		$this->assertContains( 'error', $this->_last_response );
 	}
 
 	/**
@@ -110,25 +98,24 @@ class Ajax_Requests extends WP_UnitTestCase {
 	 */
 	public function test_search_with_first_word_of_post_title() {
 		// Simulate a logged-out user.
-		wp_set_current_user( 0 );
-
-		// Create a nonce for the logged-out user.
-		$nonce = wp_create_nonce( 'wp-search-suggest' );
+		$this->logout();
 
 		// Create a test post with a specific title.
 		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
 
 		// Set up the request with the first word of the post title as the query.
 		$_GET['q']        = 'Sample';
-		$_GET['_wpnonce'] = $nonce;
+		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
 
-		// Call the tested function.
-		ob_start();
-		wpss_ajax_response();
-		$output = ob_get_clean();
+		// Make the request.
+		try {
+			$this->_handleAjax( 'wp-search-suggest' );
+		} catch ( WPAjaxDieContinueException $exception ) {
+			unset( $exception );
+		}
 
 		// Assert that the response contains the post title.
-		$this->assertContains( 'Sample Post Title', $output );
+		$this->assertContains( 'Sample Post Title', $this->_last_response );
 
 		// Clean up by deleting the test post.
 		wp_delete_post( $post_id, true );
