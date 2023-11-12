@@ -8,7 +8,7 @@
 /**
  * User meta related tests.
  */
-class Ajax_Requests extends WP_Ajax_UnitTestCase {\
+class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
 	public static function set_up_before_class() {
 		parent::set_up_before_class();
