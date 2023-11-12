@@ -90,7 +90,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		$this->_setRole( 'subscriber' );
 
 		// Set up the request with the invalid nonce.
-		$_GET['q']        = 'your_search_query';
+		$_GET['q']        = 'Title';
 		$_GET['_wpnonce'] = 'invalid_nonce';
 
 		// Make the request.
@@ -101,6 +101,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		}
 
 		// Assert that the response contains an error message.
-		$this->assertSame( '-1', $this->_last_response );
+		$this->expectException( 'WPAjaxDieStopException' );
+		$this->expectExceptionMessage( '-1' );
 	}
 }
