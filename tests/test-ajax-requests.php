@@ -10,6 +10,9 @@
  */
 class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
+	/**
+	 * Set up before class.
+	 */
 	public static function set_up_before_class() {
 		parent::set_up_before_class();
 
@@ -39,9 +42,9 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		} catch ( WPAjaxDieContinueException $exception ) {
 			// We expect this exception to be thrown.
 		}
-
+var_dump( $this->_last_response );
 		// Assert that the response contains the post title.
-		$this->expectExceptionMessage( 'Sample Post Title' );
+		$this->assertSame( 'Sample Post Title', $this->_last_response );
 
 		// Clean up by deleting the test post.
 		wp_delete_post( $post_id, true );
@@ -71,7 +74,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		}
 
 		// Assert that the response contains the post title.
-		$this->expectExceptionMessage( 'Sample Post Title' );
+		$this->assertSame( 'Sample Post Title', $this->_last_response );
 
 		// Clean up by deleting the test post.
 		wp_delete_post( $post_id, true );
