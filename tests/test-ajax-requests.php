@@ -42,7 +42,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		} catch ( WPAjaxDieContinueException $exception ) {
 			// We expect this exception to be thrown.
 		}
-var_dump( $this->_last_response );
+
 		// Assert that the response contains the post title.
 		$this->assertSame( 'Sample Post Title', $this->_last_response );
 
@@ -96,11 +96,11 @@ var_dump( $this->_last_response );
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieContinueException $exception ) {
+		} catch ( WPAjaxDieStopException $exception ) {
 			// We expect this exception to be thrown.
 		}
 
 		// Assert that the response contains an error message.
-		$this->expectExceptionMessage( '-1' );
+		$this->assertSame( '-1', $this->_last_response );
 	}
 }
