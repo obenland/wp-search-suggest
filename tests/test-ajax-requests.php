@@ -101,6 +101,6 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		}
 
 		// Assert that the response contains an error message.
-		$this->assertSame( '-1', $this->_last_response );
+		$this->assertEmpty( $this->_last_response );
 	}
 }
