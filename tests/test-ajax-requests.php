@@ -26,19 +26,25 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		// Simulate a logged-in user.
 		$this->_setRole( 'subscriber' );
 
-		// Set up the request.
-		$_GET['q']        = 'your_search_query';
+		// Create a test post with a specific title.
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
+
+		// Set up the request with the first word of the post title as the query.
+		$_GET['q']        = 'Sample';
 		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
 
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieStopException $exception ) {
+		} catch ( WPAjaxDieContinueException $exception ) {
 			// We expect this exception to be thrown.
 		}
-var_dump($exception->getMessage());
-		// Assert that the response is not empty or contains an error message.
-		$this->assertNotEmpty( $exception->getMessage() );
+
+		// Assert that the response contains the post title.
+		$this->expectExceptionMessage( 'Sample Post Title' );
+
+		// Clean up by deleting the test post.
+		wp_delete_post( $post_id, true );
 	}
 
 	/**
@@ -50,19 +56,25 @@ var_dump($exception->getMessage());
 		// Simulate a logged-out user.
 		$this->logout();
 
-		// Set up the request.
-		$_GET['q']        = 'your_search_query';
+		// Create a test post with a specific title.
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
+
+		// Set up the request with the first word of the post title as the query.
+		$_GET['q']        = 'Sample';
 		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
 
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieStopException $exception ) {
+		} catch ( WPAjaxDieContinueException $exception ) {
 			// We expect this exception to be thrown.
 		}
 
-		// Assert that the response is not empty.
-		$this->assertNotEmpty( $exception->getMessage() );
+		// Assert that the response contains the post title.
+		$this->expectExceptionMessage( 'Sample Post Title' );
+
+		// Clean up by deleting the test post.
+		wp_delete_post( $post_id, true );
 	}
 
 	/**
@@ -81,41 +93,11 @@ var_dump($exception->getMessage());
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieStopException $exception ) {
+		} catch ( WPAjaxDieContinueException $exception ) {
 			// We expect this exception to be thrown.
 		}
 
 		// Assert that the response contains an error message.
 		$this->expectExceptionMessage( '-1' );
-	}
-
-	/**
-	 * Tests the search with the first word of a post title.
-	 *
-	 * @covers ::wpss_ajax_response
-	 */
-	public function test_search_with_first_word_of_post_title() {
-		// Simulate a logged-out user.
-		$this->logout();
-
-		// Create a test post with a specific title.
-		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
-
-		// Set up the request with the first word of the post title as the query.
-		$_GET['q']        = 'Sample';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
-
-		// Make the request.
-		try {
-			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieStopException $exception ) {
-			// We expect this exception to be thrown.
-		}
-var_dump($exception->getMessage());
-		// Assert that the response contains the post title.
-		$this->expectExceptionMessage( 'Sample Post Title' );
-
-		// Clean up by deleting the test post.
-		wp_delete_post( $post_id, true );
 	}
 }
