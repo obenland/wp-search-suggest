@@ -39,7 +39,7 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$nonce = wp_create_nonce( 'wp-search-suggest' );
 
 		// Set up the request.
-		$_GET['q'] = 'your_search_query';
+		$_GET['q']        = 'your_search_query';
 		$_GET['_wpnonce'] = $nonce;
 
 		// Call the tested function.
@@ -65,7 +65,7 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$nonce = wp_create_nonce( 'wp-search-suggest' );
 
 		// Set up the request.
-		$_GET['q'] = 'your_search_query';
+		$_GET['q']        = 'your_search_query';
 		$_GET['_wpnonce'] = $nonce;
 
 		// Call the tested function.
@@ -91,7 +91,7 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$nonce = 'invalid_nonce';
 
 		// Set up the request with the invalid nonce.
-		$_GET['q'] = 'your_search_query';
+		$_GET['q']        = 'your_search_query';
 		$_GET['_wpnonce'] = $nonce;
 
 		// Call the tested function.
@@ -119,7 +119,7 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
 
 		// Set up the request with the first word of the post title as the query.
-		$_GET['q'] = 'Sample';
+		$_GET['q']        = 'Sample';
 		$_GET['_wpnonce'] = $nonce;
 
 		// Call the tested function.
