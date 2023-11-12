@@ -4,9 +4,9 @@ Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
 Requires at least: 3.3
 Tested up to: 6.4
-Stable tag: 7
+Stable tag: 8
 
-Provides title suggestions while typing a search query, using the built in jQuery suggest script.
+Provides title suggestions while typing a search query, using the built-in jQuery suggest script.
 
 == Description ==
 
@@ -53,6 +53,9 @@ Make sure your theme's search input field has an `id="s"` and/or `name="s"` as i
 
 
 == Changelog ==
+
+= 8 =
+* Fixed a bug where search requests from logged-out users would not return results. See https://wordpress.org/support/topic/only-works-when-logged-in-18/
 
 = 7 =
 * Fixed a bug where the plugin would not work with PHP 8.0 and above. See https://wordpress.org/support/topic/after-php-8-not-working-again/
