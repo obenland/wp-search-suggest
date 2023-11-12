@@ -36,7 +36,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		} catch ( WPAjaxDieContinueException $exception ) {
 			unset( $exception );
 		}
-
+var_dump($this->_last_response);
 		// Assert that the response is not empty or contains an error message.
 		$this->assertNotEmpty( $this->_last_response );
 		$this->assertNotContains( 'error', $this->_last_response );
@@ -61,6 +61,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		} catch ( WPAjaxDieContinueException $exception ) {
 			unset( $exception );
 		}
+		var_dump($this->_last_response);
 
 		// Assert that the response is not empty or contains an error message.
 		$this->assertNotEmpty( $this->_last_response );
@@ -88,7 +89,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		}
 
 		// Assert that the response contains an error message.
-		$this->assertContains( 'error', $this->_last_response );
+		$this->assertSame( '-1', $this->_last_response );
 	}
 
 	/**
