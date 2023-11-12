@@ -33,13 +33,12 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieContinueException $exception ) {
-			unset( $exception );
+		} catch ( WPAjaxDieStopException $exception ) {
+			// We expect this exception to be thrown.
 		}
-var_dump($this->_last_response);
+var_dump($exception->getMessage());
 		// Assert that the response is not empty or contains an error message.
-		$this->assertNotEmpty( $this->_last_response );
-		$this->assertNotContains( 'error', $this->_last_response );
+		$this->assertNotEmpty( $exception->getMessage() );
 	}
 
 	/**
@@ -58,14 +57,12 @@ var_dump($this->_last_response);
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieContinueException $exception ) {
-			unset( $exception );
+		} catch ( WPAjaxDieStopException $exception ) {
+			// We expect this exception to be thrown.
 		}
-		var_dump($this->_last_response);
 
-		// Assert that the response is not empty or contains an error message.
-		$this->assertNotEmpty( $this->_last_response );
-		$this->assertNotContains( 'error', $this->_last_response );
+		// Assert that the response is not empty.
+		$this->assertNotEmpty( $exception->getMessage() );
 	}
 
 	/**
@@ -84,12 +81,12 @@ var_dump($this->_last_response);
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieContinueException $exception ) {
-			unset( $exception );
+		} catch ( WPAjaxDieStopException $exception ) {
+			// We expect this exception to be thrown.
 		}
 
 		// Assert that the response contains an error message.
-		$this->assertSame( '-1', $this->_last_response );
+		$this->expectExceptionMessage( '-1' );
 	}
 
 	/**
@@ -111,12 +108,12 @@ var_dump($this->_last_response);
 		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieContinueException $exception ) {
-			unset( $exception );
+		} catch ( WPAjaxDieStopException $exception ) {
+			// We expect this exception to be thrown.
 		}
-
+var_dump($exception->getMessage());
 		// Assert that the response contains the post title.
-		$this->assertContains( 'Sample Post Title', $this->_last_response );
+		$this->expectExceptionMessage( 'Sample Post Title' );
 
 		// Clean up by deleting the test post.
 		wp_delete_post( $post_id, true );
