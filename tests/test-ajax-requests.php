@@ -7,8 +7,6 @@
 
 /**
  * User meta related tests.
- *
- *
  */
 class Ajax_Requests extends WP_UnitTestCase {
 
@@ -28,6 +26,11 @@ class Ajax_Requests extends WP_UnitTestCase {
 		static::$user = $factory->user->create_and_get( array( 'role' => 'subscriber' ) );
 	}
 
+	/**
+	 * Tests whether a logged-in user can access the AJAX request.
+	 *
+	 * @covers ::wpss_ajax_response
+	 */
 	public function test_logged_in_user_can_access() {
 		// Simulate a logged-in user.
 		wp_set_current_user( static::$user );
@@ -49,6 +52,11 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$this->assertNotContains( 'error', $output );
 	}
 
+	/**
+	 * Tests whether a logged-out user can access the AJAX request.
+	 *
+	 * @covers ::wpss_ajax_response
+	 */
 	public function test_logged_out_user_can_access() {
 		// Simulate a logged-out user.
 		wp_set_current_user( 0 );
@@ -70,6 +78,11 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$this->assertNotContains( 'error', $output );
 	}
 
+	/**
+	 * Tests whether an invalid nonce is rejected.
+	 *
+	 * @covers ::wpss_ajax_response
+	 */
 	public function test_invalid_nonce_for_logged_in_user() {
 		// Simulate a logged-in user.
 		wp_set_current_user( static::$user );
@@ -90,6 +103,11 @@ class Ajax_Requests extends WP_UnitTestCase {
 		$this->assertContains( 'error', $output );
 	}
 
+	/**
+	 * Tests the search with the first word of a post title.
+	 *
+	 * @covers ::wpss_ajax_response
+	 */
 	public function test_search_with_first_word_of_post_title() {
 		// Simulate a logged-out user.
 		wp_set_current_user( 0 );
