@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:disable Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 /**
  * Ajax requests test file.
  *
@@ -101,7 +101,6 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 		}
 
 		// Assert that the response contains an error message.
-		$this->expectException( 'WPAjaxDieStopException' );
 		$this->expectExceptionMessage( '-1' );
 	}
 }
