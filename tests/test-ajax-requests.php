@@ -34,7 +34,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
 		// Set up the request with the first word of the post title as the query.
 		$_GET['q']        = 'Sample';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
+		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );
 
 		// Make the request.
 		try {
@@ -64,7 +64,7 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
 		// Set up the request with the first word of the post title as the query.
 		$_GET['q']        = 'Sample';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );;
+		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );
 
 		// Make the request.
 		try {
