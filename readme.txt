@@ -3,7 +3,7 @@ Contributors: obenland
 Tags: search, AJAX, jQuery
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TLX9TH5XRURBA
 Requires at least: 3.3
-Tested up to: 6.4
+Tested up to: 6.9
 Stable tag: 8
 
 Provides title suggestions while typing a search query, using the built-in jQuery suggest script.
