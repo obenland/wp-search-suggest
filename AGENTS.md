@@ -49,9 +49,8 @@ CI matrix: PHP 7.4 + 8.4 against WP latest, both single-site and multisite, on e
 **Asset variants.** Both `js/` and `css/` ship a production file (`wpss-search-suggest.js` / `.css`) and a `.dev.*` counterpart. `wpss_init` picks the `.dev` variant when `SCRIPT_DEBUG` is true. Asset versions are read from the plugin header via `get_file_data( __FILE__, ... 'Version' ... )` — bumping the `Version:` header in `wp-search-suggest.php` is what busts cached assets.
 
 **Tests.** Two suites under `tests/`:
-- `test-ajax-requests.php` (extends `WP_Ajax_UnitTestCase`) exercises the `wp-search-suggest` AJAX endpoint with valid/invalid nonces and logged-in/out roles.
-- `test-wp-search-suggest.php` (extends `WP_UnitTestCase`) covers the registration helpers (`wpss_init` script + style + `wpss_options` localisation, `wpss_enqueue_scripts`) and the title→post-ID lookup (`wpss_get_post_id_from_title`, including the `post_status = 'publish'` filter and the object-cache key).
-- The `wpss_post_url` AJAX wrapper itself isn't directly tested, but its core lookup is covered by the helper tests.
+- `test-ajax-requests.php` (extends `WP_Ajax_UnitTestCase`) exercises both AJAX endpoints — `wp-search-suggest` (valid/invalid nonces and logged-in/out roles) and `wpss-post-url` (matching title, no-match, invalid nonce on the `wpss-post-url` action).
+- `test-wp-search-suggest.php` (extends `WP_UnitTestCase`) covers the registration helpers (`wpss_init` script + style + `wpss_options` localisation including the two distinct nonces and SCRIPT_DEBUG-driven asset suffix, `wpss_enqueue_scripts`) and the title→post-ID lookup (`wpss_get_post_id_from_title`, including the `post_status = 'publish'` filter and the object-cache hit path).
 
 `tests/bootstrap.php` is wp-env-aware: it loads the plugin on `muplugins_loaded` against the WP test suite that wp-env mounts inside the `tests-cli` container.
 

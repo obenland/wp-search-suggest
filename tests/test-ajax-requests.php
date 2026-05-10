@@ -1,106 +1,163 @@
 <?php // phpcs:disable Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 /**
- * Ajax requests test file.
+ * Tests for the two AJAX endpoints exposed by the plugin.
  *
  * @package wp-search-suggest
  */
 
 /**
- * User meta related tests.
+ * Covers wp_ajax(_nopriv)_wp-search-suggest and wp_ajax(_nopriv)_wpss-post-url.
  */
 class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
 	/**
-	 * Set up before class.
-	 */
-	public static function set_up_before_class() {
-		parent::set_up_before_class();
-
-		add_action( 'wp_ajax_wp-search-suggest', 'wpss_ajax_response' );
-		add_action( 'wp_ajax_nopriv_wp-search-suggest', 'wpss_ajax_response' );
-	}
-
-	/**
-	 * Tests whether a logged-in user can access the AJAX request.
+	 * Suggest endpoint returns the matching post title for a logged-in user.
 	 *
 	 * @covers ::wpss_ajax_response
 	 */
-	public function test_logged_in_user_can_access() {
-		// Simulate a logged-in user.
+	public function test_suggest_returns_matching_post_title_for_logged_in_user() {
 		$this->_setRole( 'subscriber' );
-
-		// Create a test post with a specific title.
-		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
-
-		// Set up the request with the first word of the post title as the query.
-		$_GET['q']        = 'Sample';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );
-
-		// Make the request.
-		try {
-			$this->_handleAjax( 'wp-search-suggest' );
-		} catch ( WPAjaxDieContinueException $exception ) {
-			// We expect this exception to be thrown.
-		}
-
-		// Assert that the response contains the post title.
-		$this->assertSame( 'Sample Post Title', $this->_last_response );
-
-		// Clean up by deleting the test post.
-		wp_delete_post( $post_id, true );
+		$this->assert_suggest_returns_title();
 	}
 
 	/**
-	 * Tests whether a logged-out user can access the AJAX request.
+	 * Suggest endpoint returns the matching post title for a logged-out user.
 	 *
 	 * @covers ::wpss_ajax_response
 	 */
-	public function test_logged_out_user_can_access() {
-		// Simulate a logged-out user.
+	public function test_suggest_returns_matching_post_title_for_logged_out_user() {
 		$this->logout();
+		$this->assert_suggest_returns_title();
+	}
 
-		// Create a test post with a specific title.
-		$post_id = $this->factory->post->create( array( 'post_title' => 'Sample Post Title' ) );
+	/**
+	 * Suggest endpoint rejects an invalid nonce when logged in.
+	 *
+	 * @covers ::wpss_ajax_response
+	 */
+	public function test_suggest_rejects_invalid_nonce_when_logged_in() {
+		$this->_setRole( 'subscriber' );
+		$this->assert_suggest_rejects_invalid_nonce();
+	}
 
-		// Set up the request with the first word of the post title as the query.
-		$_GET['q']        = 'Sample';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );
+	/**
+	 * Suggest endpoint rejects an invalid nonce when logged out.
+	 *
+	 * The wp_ajax_nopriv_* hook runs the same nonce check; this guards against the
+	 * nopriv branch silently accepting unauthenticated requests.
+	 *
+	 * @covers ::wpss_ajax_response
+	 */
+	public function test_suggest_rejects_invalid_nonce_when_logged_out() {
+		$this->logout();
+		$this->assert_suggest_rejects_invalid_nonce();
+	}
 
-		// Make the request.
+	/**
+	 * Post URL endpoint returns the permalink for a published post matching the title.
+	 *
+	 * @covers ::wpss_post_url
+	 */
+	public function test_post_url_returns_permalink_for_matching_title() {
+		$post_id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Sample Post Title',
+				'post_status' => 'publish',
+			)
+		);
+
+		$_POST['title']    = 'Sample Post Title';
+		$_POST['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
+
 		try {
-			$this->_handleAjax( 'wp-search-suggest' );
+			$this->_handleAjax( 'wpss-post-url' );
 		} catch ( WPAjaxDieContinueException $exception ) {
-			// We expect this exception to be thrown.
+			// Expected: wp_die() at end of handler.
 		}
 
-		// Assert that the response contains the post title.
-		$this->assertSame( 'Sample Post Title', $this->_last_response );
+		$this->assertSame( get_permalink( $post_id ), $this->_last_response );
 
-		// Clean up by deleting the test post.
 		wp_delete_post( $post_id, true );
 	}
 
 	/**
-	 * Tests whether an invalid nonce is rejected.
+	 * Post URL endpoint returns an empty response when no post matches the title.
 	 *
-	 * @covers ::wpss_ajax_response
+	 * @covers ::wpss_post_url
 	 */
-	public function test_invalid_nonce_for_logged_in_user() {
-		// Simulate a logged-in user.
-		$this->_setRole( 'subscriber' );
+	public function test_post_url_returns_empty_response_when_no_post_matches() {
+		$_POST['title']    = 'No Such Title Exists';
+		$_POST['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
 
-		// Set up the request with the invalid nonce.
+		try {
+			$this->_handleAjax( 'wpss-post-url' );
+		} catch ( WPAjaxDieStopException $exception ) {
+			/*
+			 * Expected: wp_die() at end of handler. WP_Ajax_UnitTestCase throws
+			 * the Stop variant when nothing was echoed (here, because the title
+			 * matches no post and the esc_url(...) branch is skipped).
+			 */
+		}
+
+		$this->assertSame( '', $this->_last_response );
+	}
+
+	/**
+	 * Post URL endpoint rejects an invalid nonce.
+	 *
+	 * The plugin uses TWO distinct nonces (`wp-search-suggest` for suggest,
+	 * `wpss-post-url` for the URL resolver). This test guards the second one
+	 * — collapsing the two would make this assertion still pass under suggest
+	 * but break the URL endpoint in production.
+	 *
+	 * @covers ::wpss_post_url
+	 */
+	public function test_post_url_rejects_invalid_nonce() {
+		$_POST['title']    = 'Sample Post Title';
+		$_POST['_wpnonce'] = 'invalid_nonce';
+
+		try {
+			$this->_handleAjax( 'wpss-post-url' );
+		} catch ( WPAjaxDieStopException $exception ) {
+			// Expected: check_ajax_referer() dies with -1 on failure.
+		}
+
+		$this->assertEmpty( $this->_last_response );
+	}
+
+	/**
+	 * Asserts the suggest endpoint returns the matching post title for the current request state.
+	 */
+	private function assert_suggest_returns_title() {
+		$post_id = self::factory()->post->create( array( 'post_title' => 'Sample Post Title' ) );
+
+		$_GET['q']        = 'Sample';
+		$_GET['_wpnonce'] = wp_create_nonce( 'wp-search-suggest' );
+
+		try {
+			$this->_handleAjax( 'wp-search-suggest' );
+		} catch ( WPAjaxDieContinueException $exception ) {
+			// Expected: wp_die() at end of handler.
+		}
+
+		$this->assertSame( 'Sample Post Title', $this->_last_response );
+
+		wp_delete_post( $post_id, true );
+	}
+
+	/**
+	 * Asserts the suggest endpoint rejects an invalid nonce for the current request state.
+	 */
+	private function assert_suggest_rejects_invalid_nonce() {
 		$_GET['q']        = 'Title';
 		$_GET['_wpnonce'] = 'invalid_nonce';
 
-		// Make the request.
 		try {
 			$this->_handleAjax( 'wp-search-suggest' );
 		} catch ( WPAjaxDieStopException $exception ) {
-			// We expect this exception to be thrown.
+			// Expected: check_ajax_referer() dies with -1 on failure.
 		}
 
-		// Assert that the response contains an error message.
 		$this->assertEmpty( $this->_last_response );
 	}
 }
