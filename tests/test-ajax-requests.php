@@ -11,14 +11,6 @@
 class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
 	/**
-	 * Resets request superglobals between tests so state cannot leak across cases.
-	 */
-	public function tear_down() {
-		unset( $_GET['q'], $_GET['_wpnonce'], $_REQUEST['title'], $_REQUEST['_wpnonce'] );
-		parent::tear_down();
-	}
-
-	/**
 	 * Suggest endpoint returns the matching post title for a logged-in user.
 	 *
 	 * @covers ::wpss_ajax_response
@@ -74,8 +66,8 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 			)
 		);
 
-		$_REQUEST['title']    = 'Sample Post Title';
-		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
+		$_GET['title']    = 'Sample Post Title';
+		$_GET['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
@@ -94,8 +86,8 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 	 * @covers ::wpss_post_url
 	 */
 	public function test_post_url_returns_empty_response_when_no_post_matches() {
-		$_REQUEST['title']    = 'No Such Title Exists';
-		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
+		$_GET['title']    = 'No Such Title Exists';
+		$_GET['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
@@ -117,8 +109,8 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 	 * @covers ::wpss_post_url
 	 */
 	public function test_post_url_rejects_invalid_nonce() {
-		$_REQUEST['title']    = 'Sample Post Title';
-		$_REQUEST['_wpnonce'] = 'invalid_nonce';
+		$_GET['title']    = 'Sample Post Title';
+		$_GET['_wpnonce'] = 'invalid_nonce';
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
