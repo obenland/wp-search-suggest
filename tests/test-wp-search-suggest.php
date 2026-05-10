@@ -47,6 +47,73 @@ class Test_WP_Search_Suggest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * `wpss_init` localises two distinct nonces — one per AJAX endpoint.
+	 *
+	 * The plugin uses `wpss-post-url` for the URL resolver and `wp-search-suggest`
+	 * for the suggest endpoint. Conflating the two would leave one endpoint
+	 * accepting nonces minted for the other; this test fails if a future change
+	 * collapses them.
+	 */
+	public function test_init_localises_two_distinct_nonces() {
+		wpss_init();
+
+		global $wp_scripts;
+		$data = (string) $wp_scripts->get_data( 'wp-search-suggest', 'data' );
+
+		$post_url_nonce = '';
+		if ( preg_match( '/"nonce":"([^"]+)"/', $data, $matches ) ) {
+			$post_url_nonce = $matches[1];
+		}
+
+		$suggest_nonce = '';
+		if ( preg_match( '/_wpnonce=([a-zA-Z0-9]+)/', $data, $matches ) ) {
+			$suggest_nonce = $matches[1];
+		}
+
+		$this->assertNotEmpty( $post_url_nonce, 'Expected a wpss-post-url nonce on wpss_options.nonce.' );
+		$this->assertNotEmpty( $suggest_nonce, 'Expected a wp-search-suggest nonce inside wpss_options.ajaxurl.' );
+		$this->assertNotSame( $post_url_nonce, $suggest_nonce, 'The two endpoints must use distinct nonces.' );
+		$this->assertNotFalse( wp_verify_nonce( $post_url_nonce, 'wpss-post-url' ), 'wpss_options.nonce must verify against wpss-post-url.' );
+		$this->assertNotFalse( wp_verify_nonce( $suggest_nonce, 'wp-search-suggest' ), 'wpss_options.ajaxurl nonce must verify against wp-search-suggest.' );
+	}
+
+	/**
+	 * `wpss_init` registers both assets with the version from the plugin header.
+	 *
+	 * Pinning this contract guarantees that a release that bumps the `Version:`
+	 * header actually busts cached asset URLs.
+	 */
+	public function test_init_uses_plugin_header_version_for_assets() {
+		wpss_init();
+
+		$plugin_data = get_file_data(
+			dirname( __DIR__ ) . '/wp-search-suggest.php',
+			array( 'Version' => 'Version' ),
+			'plugin'
+		);
+
+		$this->assertSame( $plugin_data['Version'], wp_scripts()->registered['wp-search-suggest']->ver );
+		$this->assertSame( $plugin_data['Version'], wp_styles()->registered['wp-search-suggest']->ver );
+	}
+
+	/**
+	 * `wpss_init` swaps the `.dev` asset suffix in iff SCRIPT_DEBUG is enabled.
+	 *
+	 * Reads the current SCRIPT_DEBUG state rather than toggling it (the constant
+	 * cannot be redefined mid-process); this asserts that registration honours
+	 * whichever state the runtime is in.
+	 */
+	public function test_init_selects_dev_asset_suffix_based_on_script_debug() {
+		wpss_init();
+
+		$expected_js  = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? 'wpss-search-suggest.dev.js' : 'wpss-search-suggest.js';
+		$expected_css = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? 'wpss-search-suggest.dev.css' : 'wpss-search-suggest.css';
+
+		$this->assertStringEndsWith( $expected_js, wp_scripts()->registered['wp-search-suggest']->src );
+		$this->assertStringEndsWith( $expected_css, wp_styles()->registered['wp-search-suggest']->src );
+	}
+
+	/**
 	 * `wpss_enqueue_scripts` enqueues both the JS and CSS handles registered
 	 * by `wpss_init`.
 	 */
