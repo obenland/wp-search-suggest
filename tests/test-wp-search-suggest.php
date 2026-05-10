@@ -187,9 +187,16 @@ class Test_WP_Search_Suggest extends WP_UnitTestCase {
 	/**
 	 * Decodes the JSON object that `wp_localize_script` emits for `wpss_options`.
 	 *
-	 * Reads the `data` extra (`var wpss_options = {...};`), extracts the JSON
-	 * object literal, and returns the decoded array — robust against future
-	 * WordPress changes to whitespace or property ordering inside the assignment.
+	 * Reads the `data` extra (`var wpss_options = {...};`), extracts the first
+	 * JSON object literal, and returns the decoded array — robust against
+	 * future WordPress changes to whitespace or property ordering inside the
+	 * assignment.
+	 *
+	 * Note: `wp_localize_script` *appends* to the data extra, so when the
+	 * `init` hook has already fired before a test calls `wpss_init()`, the
+	 * data string contains two `var wpss_options = {...};` statements with
+	 * identical payloads. The regex below is intentionally non-greedy so it
+	 * captures only the first object instead of spanning across both.
 	 *
 	 * @return array Decoded wpss_options payload.
 	 */
@@ -199,7 +206,7 @@ class Test_WP_Search_Suggest extends WP_UnitTestCase {
 		$this->assertNotEmpty( $data, 'Expected wpss_options to be localised onto the script.' );
 		$this->assertSame(
 			1,
-			preg_match( '/wpss_options\s*=\s*(\{.*\});/s', $data, $matches ),
+			preg_match( '/wpss_options\s*=\s*(\{.*?\});/s', $data, $matches ),
 			'Could not locate the wpss_options assignment in localised data.'
 		);
 
