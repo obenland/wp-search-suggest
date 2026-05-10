@@ -9,7 +9,10 @@
 
 # Files
 .distignore
+AGENTS.md
+CLAUDE.md
 composer.json
+composer.lock
 package.json
 package-lock.json
 phpunit.xml
