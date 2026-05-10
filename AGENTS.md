@@ -8,36 +8,33 @@ WP Search Suggest is a WordPress.org plugin that adds AJAX title autocomplete to
 
 ## Commands
 
+The test harness runs through [`@wordpress/env`](https://www.npmjs.com/package/@wordpress/env) (Docker). Node version is pinned in `.nvmrc`; PHP/WordPress versions are controlled by `.wp-env.json` and the matrix in `.github/workflows/phpunit.yml`.
+
 ```bash
-# Install dev deps (PHPUnit, Brain Monkey, WPCS, etc.)
+# One-time setup
 composer install
+npm ci
 
-# One-time: install the WP test suite locally (DB required)
-bash bin/install-wp-tests.sh <db-name> <db-user> <db-pass> [db-host] [wp-version]
+# Boot the test WordPress environment (Docker)
+npm run start
 
-# Run PHPUnit (uses tests/bootstrap.php; requires WP test suite installed)
-composer test
-# or directly:
-vendor/bin/phpunit --config=phpunit.xml
+# Run PHPUnit (single-site / multisite)
+npm test                # alias for npm run test-php
+npm run test-php
+npm run test-php-multisite
 
-# Run a single test
-vendor/bin/phpunit --config=phpunit.xml --filter test_logged_in_user_can_access
-
-# Multisite run (CI runs both modes)
-WP_MULTISITE=1 vendor/bin/phpunit --config=phpunit.xml
-
-# Lint (WordPress Coding Standards)
-vendor/bin/phpcs --standard=WordPress --extensions=php --ignore="node_modules,vendor" .
-vendor/bin/phpcbf --standard=WordPress --extensions=php --ignore="node_modules,vendor" .
+# Lint (WordPress Coding Standards via WPCS 3.x)
+composer lint
+composer lint:fix
 ```
 
-CI runs PHPUnit against PHP 7.4 / latest WordPress and PHPCS against the `WordPress` standard on every push.
+`npm run test-php` shells into the wp-env `tests-cli` container and runs `composer test` (`phpunit -c phpunit.xml --verbose`); `composer test` directly is meaningful only inside that container, since the harness expects the WP test suite available there.
 
-> **PHP version note:** the locked `phpunit/phpunit` is `7.5.20` (constraint `^7.0`), which requires PHP `^7.1` and will not install on PHP 8+. Run `composer install` and the test suite under PHP 7.4 (matching CI). Production code itself supports PHP `^7.2|^8.0`; the constraint only affects the dev test toolchain.
+CI matrix: PHP 7.4 + 8.4 against WP latest, both single-site and multisite, on every PR/push to `trunk` (path-filtered to PHP/composer/test config changes).
 
 ## Architecture
 
-**Single-file plugin.** All PHP lives in `wp-search-suggest.php`; the `composer.json` `psr-4` mapping to `./php` and `WordPressPlugin\` is unused — there is no class-based code.
+**Single-file plugin.** All PHP lives in `wp-search-suggest.php` — no classes, no autoloading.
 
 **Request flow:**
 1. `wpss_init` (priority 9 on `init`) registers the script + style and calls `wp_localize_script` to expose `wpss_options` (two AJAX URLs and two distinct nonces) to the front end.
@@ -51,9 +48,14 @@ CI runs PHPUnit against PHP 7.4 / latest WordPress and PHPCS against the `WordPr
 
 **Asset variants.** Both `js/` and `css/` ship a production file (`wpss-search-suggest.js` / `.css`) and a `.dev.*` counterpart. `wpss_init` picks the `.dev` variant when `SCRIPT_DEBUG` is true. Asset versions are read from the plugin header via `get_file_data( __FILE__, ... 'Version' ... )` — bumping the `Version:` header in `wp-search-suggest.php` is what busts cached assets.
 
-**Tests.** `tests/test-ajax-requests.php` extends `WP_Ajax_UnitTestCase` and exercises the `wp-search-suggest` endpoint (`wpss_ajax_response`) with valid/invalid nonces and logged-in/out roles. The `wpss-post-url` endpoint (`wpss_post_url` / `wpss_get_post_id_from_title`) currently has no test coverage. `tests/bootstrap.php` reads `WP_TESTS_DIR` (or falls back to a tempdir) and manually loads the plugin on `muplugins_loaded`.
+**Tests.** Two suites under `tests/`:
+- `test-ajax-requests.php` (extends `WP_Ajax_UnitTestCase`) exercises the `wp-search-suggest` AJAX endpoint with valid/invalid nonces and logged-in/out roles.
+- `test-wp-search-suggest.php` (extends `WP_UnitTestCase`) covers the registration helpers (`wpss_init` script + style + `wpss_options` localisation, `wpss_enqueue_scripts`) and the title→post-ID lookup (`wpss_get_post_id_from_title`, including the `post_status = 'publish'` filter and the object-cache key).
+- The `wpss_post_url` AJAX wrapper itself isn't directly tested, but its core lookup is covered by the helper tests.
 
-**Release / deploy.** Pushing a git tag triggers `.github/workflows/deploy.yml`, which uses `10up/action-wordpress-plugin-deploy` to sync to the WordPress.org SVN repo. `update-tested-up-to.yml` and `push-asset-readme-update.yml` keep `Tested up to` and the `.wordpress-org/` assets in sync with SVN. `.distignore` controls what is excluded from the SVN deploy. Bumping a release means updating both the `Version:` header in `wp-search-suggest.php` and `Stable tag:` + changelog in `readme.txt`, then tagging.
+`tests/bootstrap.php` is wp-env-aware: it loads the plugin on `muplugins_loaded` against the WP test suite that wp-env mounts inside the `tests-cli` container.
+
+**Release / deploy.** Pushing a git tag triggers `.github/workflows/deploy.yml`, which uses `10up/action-wordpress-plugin-deploy` to sync to the WordPress.org SVN repo. `update-tested-up-to.yml` runs the full PHPUnit suite (single-site + multisite) against latest WP in a `validate` job, and only proceeds to bump `Tested up to:` if those pass. `push-asset-readme-update.yml` keeps `.wordpress-org/` assets in sync with SVN. `.distignore` controls what is excluded from the SVN deploy. Bumping a release means updating both the `Version:` header in `wp-search-suggest.php` and `Stable tag:` + changelog in `readme.txt`, then tagging.
 
 ## Conventions
 
