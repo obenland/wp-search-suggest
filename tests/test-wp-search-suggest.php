@@ -57,20 +57,17 @@ class Test_WP_Search_Suggest extends WP_UnitTestCase {
 	public function test_init_localises_two_distinct_nonces() {
 		wpss_init();
 
-		global $wp_scripts;
-		$data = (string) $wp_scripts->get_data( 'wp-search-suggest', 'data' );
+		$options = $this->get_localised_wpss_options();
 
-		$post_url_nonce = '';
-		if ( preg_match( '/"nonce":"([^"]+)"/', $data, $matches ) ) {
-			$post_url_nonce = $matches[1];
-		}
+		$this->assertArrayHasKey( 'nonce', $options, 'Expected a wpss-post-url nonce on wpss_options.nonce.' );
+		$this->assertArrayHasKey( 'ajaxurl', $options, 'Expected wpss_options.ajaxurl to be localised.' );
 
-		$suggest_nonce = '';
-		if ( preg_match( '/_wpnonce=([a-zA-Z0-9]+)/', $data, $matches ) ) {
-			$suggest_nonce = $matches[1];
-		}
+		$ajax_args = array();
+		wp_parse_str( (string) wp_parse_url( $options['ajaxurl'], PHP_URL_QUERY ), $ajax_args );
 
-		$this->assertNotEmpty( $post_url_nonce, 'Expected a wpss-post-url nonce on wpss_options.nonce.' );
+		$post_url_nonce = $options['nonce'];
+		$suggest_nonce  = isset( $ajax_args['_wpnonce'] ) ? $ajax_args['_wpnonce'] : '';
+
 		$this->assertNotEmpty( $suggest_nonce, 'Expected a wp-search-suggest nonce inside wpss_options.ajaxurl.' );
 		$this->assertNotSame( $post_url_nonce, $suggest_nonce, 'The two endpoints must use distinct nonces.' );
 		$this->assertNotFalse( wp_verify_nonce( $post_url_nonce, 'wpss-post-url' ), 'wpss_options.nonce must verify against wpss-post-url.' );
@@ -185,5 +182,30 @@ class Test_WP_Search_Suggest extends WP_UnitTestCase {
 			(string) wp_cache_get( 'wpss_post_title' . $title, 'post' ),
 			'Expected the post ID to be cached under wpss_post_title<title>.'
 		);
+	}
+
+	/**
+	 * Decodes the JSON object that `wp_localize_script` emits for `wpss_options`.
+	 *
+	 * Reads the `data` extra (`var wpss_options = {...};`), extracts the JSON
+	 * object literal, and returns the decoded array — robust against future
+	 * WordPress changes to whitespace or property ordering inside the assignment.
+	 *
+	 * @return array Decoded wpss_options payload.
+	 */
+	private function get_localised_wpss_options() {
+		$data = (string) wp_scripts()->get_data( 'wp-search-suggest', 'data' );
+
+		$this->assertNotEmpty( $data, 'Expected wpss_options to be localised onto the script.' );
+		$this->assertSame(
+			1,
+			preg_match( '/wpss_options\s*=\s*(\{.*\});/s', $data, $matches ),
+			'Could not locate the wpss_options assignment in localised data.'
+		);
+
+		$decoded = json_decode( $matches[1], true );
+		$this->assertIsArray( $decoded, 'wpss_options payload was not valid JSON.' );
+
+		return $decoded;
 	}
 }

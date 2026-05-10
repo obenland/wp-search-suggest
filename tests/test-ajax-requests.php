@@ -66,8 +66,8 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 			)
 		);
 
-		$_GET['title']    = 'Sample Post Title';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
+		$_POST['title']    = 'Sample Post Title';
+		$_POST['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
@@ -86,8 +86,8 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 	 * @covers ::wpss_post_url
 	 */
 	public function test_post_url_returns_empty_response_when_no_post_matches() {
-		$_GET['title']    = 'No Such Title Exists';
-		$_GET['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
+		$_POST['title']    = 'No Such Title Exists';
+		$_POST['_wpnonce'] = wp_create_nonce( 'wpss-post-url' );
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
@@ -113,8 +113,8 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 	 * @covers ::wpss_post_url
 	 */
 	public function test_post_url_rejects_invalid_nonce() {
-		$_GET['title']    = 'Sample Post Title';
-		$_GET['_wpnonce'] = 'invalid_nonce';
+		$_POST['title']    = 'Sample Post Title';
+		$_POST['_wpnonce'] = 'invalid_nonce';
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
