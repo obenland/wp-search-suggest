@@ -5,26 +5,49 @@
  * @package wp-search-suggest
  */
 
-$_tests_dir = getenv( 'WP_TESTS_DIR' );
-if ( ! $_tests_dir ) {
-	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+define( 'TESTS_PLUGIN_DIR', dirname( __DIR__ ) );
+
+// Determine correct location for plugins directory to use.
+if ( false !== getenv( 'WP_PLUGIN_DIR' ) ) {
+	define( 'WP_PLUGIN_DIR', getenv( 'WP_PLUGIN_DIR' ) );
+} else {
+	define( 'WP_PLUGIN_DIR', dirname( TESTS_PLUGIN_DIR ) );
+}
+
+// Load Composer dependencies if applicable.
+if ( file_exists( TESTS_PLUGIN_DIR . '/vendor/autoload.php' ) ) {
+	require_once TESTS_PLUGIN_DIR . '/vendor/autoload.php';
+}
+
+// Detect where to load the WordPress tests environment from.
+if ( false !== getenv( 'WP_TESTS_DIR' ) ) {
+	$_tests_dir = getenv( 'WP_TESTS_DIR' );
+} elseif ( false !== getenv( 'WP_DEVELOP_DIR' ) ) {
+	$_tests_dir = getenv( 'WP_DEVELOP_DIR' ) . '/tests/phpunit';
+} elseif ( file_exists( TESTS_PLUGIN_DIR . '/../../../../tests/phpunit/includes/functions.php' ) ) {
+	$_tests_dir = TESTS_PLUGIN_DIR . '/../../../../tests/phpunit';
+} else { // Fallback.
+	$_tests_dir = '/tmp/wordpress-tests-lib';
 }
 
 if ( ! file_exists( $_tests_dir . '/includes/functions.php' ) ) {
-	echo "Could not find $_tests_dir/includes/functions.php, have you run bin/install-wp-tests.sh?"; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	fwrite( STDERR, "Could not find the WordPress test suite at {$_tests_dir}. Set WP_TESTS_DIR or WP_DEVELOP_DIR, or run tests via `npm run test-php`.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 	exit( 1 );
 }
+
+// Force plugin to be active.
+$GLOBALS['wp_tests_options'] = array(
+	'active_plugins' => array( basename( TESTS_PLUGIN_DIR ) . '/wp-search-suggest.php' ),
+);
 
 // Give access to tests_add_filter() function.
 require_once $_tests_dir . '/includes/functions.php';
 
 /**
- * Manually load the plugin being tested.
+ * Manually loads the plugin under test into the WP test harness.
  */
 function _manually_load_plugin() {
-	$root = dirname( __DIR__ );
-
-	require_once $root . '/wp-search-suggest.php';
+	require dirname( __DIR__ ) . '/wp-search-suggest.php';
 }
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 

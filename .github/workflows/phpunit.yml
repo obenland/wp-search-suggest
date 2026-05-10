@@ -1,41 +1,80 @@
 name: PHPUnit
 
-on: [push]
+on:
+    push:
+        branches: [trunk]
+        paths:
+            - '**/*.php'
+            - 'composer.json'
+            - 'composer.lock'
+            - 'phpunit.xml'
+            - '.wp-env.json'
+            - 'package.json'
+            - 'package-lock.json'
+            - '.nvmrc'
+            - '.github/workflows/phpunit.yml'
+    pull_request:
+        branches: [trunk]
+        paths:
+            - '**/*.php'
+            - 'composer.json'
+            - 'composer.lock'
+            - 'phpunit.xml'
+            - '.wp-env.json'
+            - 'package.json'
+            - 'package-lock.json'
+            - '.nvmrc'
+            - '.github/workflows/phpunit.yml'
 
-env:
-    WP_TESTS_DIR: /github/home/wp-tests/wordpress-tests-lib
-    WP_CORE_DIR: /github/home/wp-tests/wordpress
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
 
 jobs:
-    test:
+    php-test:
+        name: 'PHP ${{ matrix.php }} / WP ${{ matrix.wp }}'
         runs-on: ubuntu-latest
+        timeout-minutes: 20
         strategy:
+            fail-fast: false
             matrix:
-                php-version: [7.4]
-                wordpress-version: [latest]
-        container:
-            image: junaidbhura/wp-tests:php-${{ matrix.php-version }}
-        services:
-            mysql:
-                image: mysql:5.7.27
-                env:
-                    MYSQL_ROOT_PASSWORD: root
+                php: ['7.4', '8.4']
+                wp: ['latest']
+        env:
+            WP_ENV_PHP_VERSION: ${{ matrix.php }}
+            WP_ENV_CORE: ${{ matrix.wp == 'latest' && 'https://wordpress.org/wordpress-latest.zip' || format('WordPress/WordPress#{0}', matrix.wp) }}
 
         steps:
-            - name: Checkout repository
-              uses: actions/checkout@v6
+            - uses: actions/checkout@v6
 
-            - name: Install Composer dependencies
-              run: |
-                  composer self-update --2
-                  composer install --no-dev
-                  composer global require "phpunit/phpunit:^9.6.33"
-                  composer global require "yoast/phpunit-polyfills=1.1.0"
+            - name: Setup Node.js (.nvmrc)
+              uses: actions/setup-node@v6
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
 
-            - name: Install WordPress test suite
-              run: bash bin/install-wp-tests.sh wordpress_test root root mysql ${{ matrix.wordpress-version }}
+            - name: Cache Composer dependencies
+              uses: actions/cache@v5
+              id: composer-cache
+              with:
+                  path: vendor
+                  key: composer-php${{ matrix.php }}-${{ hashFiles('composer.json') }}
 
-            - name: Tests
-              run: |
-                  $HOME/.composer/vendor/bin/phpunit --config=phpunit.xml
-                  WP_MULTISITE=1 $HOME/.composer/vendor/bin/phpunit --config=phpunit.xml
+            - name: Install PHP dependencies
+              if: steps.composer-cache.outputs.cache-hit != 'true'
+              run: composer update --prefer-dist --no-progress
+
+            - name: npm install
+              run: npm ci
+
+            - name: Install WordPress
+              run: npm run start
+
+            - name: Run PHP unit tests (single site)
+              run: npm run test-php
+
+            - name: Run PHP unit tests (multisite)
+              run: npm run test-php-multisite

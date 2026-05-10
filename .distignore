@@ -6,10 +6,15 @@
 /bin
 /node_modules
 /tests
+/vendor
 
 # Files
 .distignore
+.gitignore
+.nvmrc
+.wp-env.json
 composer.json
+composer.lock
 package.json
 package-lock.json
 phpunit.xml

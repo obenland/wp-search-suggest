@@ -1,0 +1,18 @@
+{
+	"name": "wp-search-suggest",
+	"version": "8.0.0",
+	"private": true,
+	"description": "Provides title suggestions while typing a search query.",
+	"devDependencies": {
+		"@wordpress/env": "^11.4.0"
+	},
+	"scripts": {
+		"wp-env": "wp-env",
+		"start": "wp-env start",
+		"stop": "wp-env stop",
+		"destroy": "wp-env destroy",
+		"test": "npm run test-php",
+		"test-php": "wp-env run tests-cli --env-cwd=/var/www/html/wp-content/plugins/wp-search-suggest composer test",
+		"test-php-multisite": "wp-env run tests-cli --env-cwd=/var/www/html/wp-content/plugins/wp-search-suggest composer test-multisite"
+	}
+}
