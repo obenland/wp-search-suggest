@@ -33,6 +33,8 @@ vendor/bin/phpcbf --standard=WordPress --extensions=php --ignore="node_modules,v
 
 CI runs PHPUnit against PHP 7.4 / latest WordPress and PHPCS against the `WordPress` standard on every push.
 
+> **PHP version note:** the locked `phpunit/phpunit` is `7.5.20` (constraint `^7.0`), which requires PHP `^7.1` and will not install on PHP 8+. Run `composer install` and the test suite under PHP 7.4 (matching CI). Production code itself supports PHP `^7.2|^8.0`; the constraint only affects the dev test toolchain.
+
 ## Architecture
 
 **Single-file plugin.** All PHP lives in `wp-search-suggest.php`; the `composer.json` `psr-4` mapping to `./php` and `WordPressPlugin\` is unused — there is no class-based code.
@@ -49,7 +51,7 @@ CI runs PHPUnit against PHP 7.4 / latest WordPress and PHPCS against the `WordPr
 
 **Asset variants.** Both `js/` and `css/` ship a production file (`wpss-search-suggest.js` / `.css`) and a `.dev.*` counterpart. `wpss_init` picks the `.dev` variant when `SCRIPT_DEBUG` is true. Asset versions are read from the plugin header via `get_file_data( __FILE__, ... 'Version' ... )` — bumping the `Version:` header in `wp-search-suggest.php` is what busts cached assets.
 
-**Tests.** `tests/test-ajax-requests.php` extends `WP_Ajax_UnitTestCase` and exercises the AJAX endpoints with valid/invalid nonces and logged-in/out roles. `tests/bootstrap.php` reads `WP_TESTS_DIR` (or falls back to a tempdir) and manually loads the plugin on `muplugins_loaded`.
+**Tests.** `tests/test-ajax-requests.php` extends `WP_Ajax_UnitTestCase` and exercises the `wp-search-suggest` endpoint (`wpss_ajax_response`) with valid/invalid nonces and logged-in/out roles. The `wpss-post-url` endpoint (`wpss_post_url` / `wpss_get_post_id_from_title`) currently has no test coverage. `tests/bootstrap.php` reads `WP_TESTS_DIR` (or falls back to a tempdir) and manually loads the plugin on `muplugins_loaded`.
 
 **Release / deploy.** Pushing a git tag triggers `.github/workflows/deploy.yml`, which uses `10up/action-wordpress-plugin-deploy` to sync to the WordPress.org SVN repo. `update-tested-up-to.yml` and `push-asset-readme-update.yml` keep `Tested up to` and the `.wordpress-org/` assets in sync with SVN. `.distignore` controls what is excluded from the SVN deploy. Bumping a release means updating both the `Version:` header in `wp-search-suggest.php` and `Stable tag:` + changelog in `readme.txt`, then tagging.
 
