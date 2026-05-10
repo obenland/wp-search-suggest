@@ -9,6 +9,8 @@
 
 # Files
 .distignore
+AGENTS.md
+CLAUDE.md
 composer.json
 package.json
 package-lock.json

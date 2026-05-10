@@ -29,6 +29,6 @@
     }
   },
   "scripts": {
-    "test": "phpunit --config=tests/phpunit.xml"
+    "test": "phpunit --config=phpunit.xml"
   }
 }
