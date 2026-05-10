@@ -91,8 +91,12 @@ class Ajax_Requests extends WP_Ajax_UnitTestCase {
 
 		try {
 			$this->_handleAjax( 'wpss-post-url' );
-		} catch ( WPAjaxDieContinueException $exception ) {
-			// Expected: wp_die() at end of handler.
+		} catch ( WPAjaxDieStopException $exception ) {
+			/*
+			 * Expected: wp_die() at end of handler. WP_Ajax_UnitTestCase throws
+			 * the Stop variant when nothing was echoed (here, because the title
+			 * matches no post and the esc_url(...) branch is skipped).
+			 */
 		}
 
 		$this->assertSame( '', $this->_last_response );
