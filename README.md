@@ -98,7 +98,7 @@ Make sure your theme's search input field has an `id="s"` and/or `name="s"` as i
 * Tested for WordPress 3.3.1
 
 ### 1.2
-* Added compatibilty for WordPress 3.3
+* Added compatibility for WordPress 3.3
 * Updated FAQ section
 
 ### 1.1
