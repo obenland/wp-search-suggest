@@ -5,6 +5,8 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 3.3
 Tested up to: 6.9
 Stable tag: 8
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Provides title suggestions while typing a search query, using the built-in jQuery suggest script.
 
