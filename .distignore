@@ -13,6 +13,7 @@
 .gitignore
 .nvmrc
 .wp-env.json
+.wp-env.tests.json
 AGENTS.md
 CLAUDE.md
 composer.json
