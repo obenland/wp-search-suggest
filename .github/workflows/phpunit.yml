@@ -9,6 +9,7 @@ on:
             - 'composer.lock'
             - 'phpunit.xml'
             - '.wp-env.json'
+            - '.wp-env.tests.json'
             - 'package.json'
             - 'package-lock.json'
             - '.nvmrc'
@@ -21,6 +22,7 @@ on:
             - 'composer.lock'
             - 'phpunit.xml'
             - '.wp-env.json'
+            - '.wp-env.tests.json'
             - 'package.json'
             - 'package-lock.json'
             - '.nvmrc'
@@ -72,7 +74,7 @@ jobs:
               run: npm ci
 
             - name: Install WordPress
-              run: npm run start
+              run: npm run start:tests
 
             - name: Run PHP unit tests (single site)
               run: npm run test-php

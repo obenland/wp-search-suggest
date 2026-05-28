@@ -13,8 +13,11 @@
 		"start": "wp-env start",
 		"stop": "wp-env stop",
 		"destroy": "wp-env destroy",
+		"start:tests": "wp-env start --config .wp-env.tests.json",
+		"stop:tests": "wp-env stop --config .wp-env.tests.json",
+		"destroy:tests": "wp-env destroy --config .wp-env.tests.json",
 		"test": "npm run test-php",
-		"test-php": "wp-env run tests-cli --env-cwd=/var/www/html/wp-content/plugins/wp-search-suggest composer test",
-		"test-php-multisite": "wp-env run tests-cli --env-cwd=/var/www/html/wp-content/plugins/wp-search-suggest composer test-multisite"
+		"test-php": "wp-env run cli --config .wp-env.tests.json --env-cwd=/var/www/html/wp-content/plugins/wp-search-suggest composer test",
+		"test-php-multisite": "wp-env run cli --config .wp-env.tests.json --env-cwd=/var/www/html/wp-content/plugins/wp-search-suggest composer test-multisite"
 	}
 }
