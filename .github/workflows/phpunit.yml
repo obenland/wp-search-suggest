@@ -25,6 +25,7 @@ on:
             - 'package-lock.json'
             - '.nvmrc'
             - '.github/workflows/phpunit.yml'
+            - 'README.md'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
