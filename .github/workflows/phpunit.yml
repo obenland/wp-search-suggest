@@ -51,7 +51,7 @@ jobs:
             WP_ENV_CORE: ${{ matrix.wp == 'latest' && 'https://wordpress.org/wordpress-latest.zip' || format('WordPress/WordPress#{0}', matrix.wp) }}
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
 
             - name: Setup Node.js (.nvmrc)
               uses: actions/setup-node@v6
