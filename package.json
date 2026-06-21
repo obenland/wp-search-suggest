@@ -5,7 +5,7 @@
 	"description": "Provides title suggestions while typing a search query.",
 	"devDependencies": {
 		"@wordpress/env": "^11.8.1",
-		"@wordpress/scripts": "^32.4.0"
+		"@wordpress/scripts": "^32.4.1"
 	},
 	"scripts": {
 		"wp-env": "wp-env",
