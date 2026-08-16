@@ -4,7 +4,7 @@
 	"private": true,
 	"description": "Provides title suggestions while typing a search query.",
 	"devDependencies": {
-		"@wordpress/env": "^11.12.0",
+		"@wordpress/env": "^11.13.0",
 		"@wordpress/scripts": "^34.1.0"
 	},
 	"scripts": {
